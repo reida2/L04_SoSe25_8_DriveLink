@@ -1,3 +1,10 @@
+/**
+ * AdminDashboard – Übersichtsseite für Admin‑Aktionen
+ *
+ * Zeigt Links zu Unterseiten für User‑, Mitarbeiter‑, Fahrzeug‑ und
+ * Reservierungsverwaltung. Alle Links setzen voraus, dass der Nutzer bereits
+ * per Route‑Guard als Admin authentifiziert ist.
+ */
 import React from 'react';
 import { Link } from 'react-router-dom';
 import "./AdminDashboardPage.css";

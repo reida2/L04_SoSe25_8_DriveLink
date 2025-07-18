@@ -1,6 +1,6 @@
-//-----------------------------------------------------------
+
 //  routes/authRoutes.js
-//-----------------------------------------------------------
+
 import { Router } from 'express';
 import { register, login } from '../controllers/authController.js';
 import { upload } from '../utils/upload.js';

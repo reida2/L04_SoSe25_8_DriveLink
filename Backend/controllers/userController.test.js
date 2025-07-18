@@ -1,150 +1,140 @@
-// Backend/controllers/userController.test.js
+// Unit-Tests für userController (Jest)
 
 import {
-    getMe,
-    getAllUsers,
-    updateUser,
-    deleteUser,
+  getMe,
+  getAllUsers,
+  updateUser,
+  deleteUser,
 } from './userController.js';
 
 import User from '../models/User.js';
 
+// Sequelize-Mock
 jest.mock('../config/database.js', () => ({
-    sequelize: {
-        define: jest.fn((modelName, attributes, options) => {
-            const mockModel = {
-                create: jest.fn(),
-                findOne: jest.fn(),
-                findByPk: jest.fn(),
-                findAll: jest.fn(),
-                destroy: jest.fn(),
-                save: jest.fn(),
-            };
-            return mockModel;
-        }),
-        sync: jest.fn(),
-    },
-    connectDB: jest.fn(async () => {}),
+  sequelize: {
+    define: jest.fn(() => ({
+      create  : jest.fn(),
+      findOne : jest.fn(),
+      findByPk: jest.fn(),
+      findAll : jest.fn(),
+      destroy : jest.fn(),
+      save    : jest.fn(),
+    })),
+    sync: jest.fn(),
+  },
+  connectDB: jest.fn(async () => {}),
 }));
 
 jest.mock('../models/User.js', () => ({
-    __esModule: true,
-    default: {
-        findByPk: jest.fn(),
-        findAll: jest.fn(),
-        destroy: jest.fn(),
-        save: jest.fn(),
-    }
+  __esModule: true,
+  default: {
+    findByPk: jest.fn(),
+    findAll : jest.fn(),
+    destroy : jest.fn(),
+    save    : jest.fn(),
+  },
 }));
 
 
 describe('User Controller', () => {
-    let mockReq;
-    let mockRes;
+  let req;
+  let res;
 
-    beforeEach(() => {
-        mockReq = {
-            params: {},
-            body: {},
-            user: { id: 1, role: 'user' },
-        };
-        mockRes = {
-            status: jest.fn().mockReturnThis(),
-            json: jest.fn(),
-            send: jest.fn(),
-        };
+  beforeEach(() => {
+    req = { params: {}, body: {}, user: { id: 1, role: 'user' } };
+    res = { status: jest.fn().mockReturnThis(), json: jest.fn(), send: jest.fn() };
+  });
+
+  afterEach(() => jest.clearAllMocks());
+
+  describe('getMe', () => {
+    it('liefert eigenes Profil', async () => {
+      const me = { id: 1, username: 'test' };
+      User.findByPk.mockResolvedValue(me);
+
+      await getMe(req, res);
+
+      expect(User.findByPk).toHaveBeenCalledWith(1, { attributes: { exclude: ['password'] } });
+      expect(res.json).toHaveBeenCalledWith(me);
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
+    it('gibt 404 zurück, wenn Nutzer fehlt', async () => {
+      User.findByPk.mockResolvedValue(null);
+
+      await getMe(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Benutzer nicht gefunden.' });
+    });
+  });
+
+  describe('getAllUsers', () => {
+    it('liefert alle Nutzer', async () => {
+      const all = [{ id: 1 }, { id: 2 }];
+      User.findAll.mockResolvedValue(all);
+
+      await getAllUsers(req, res);
+
+      expect(User.findAll).toHaveBeenCalledWith({ attributes: { exclude: ['password'] } });
+      expect(res.json).toHaveBeenCalledWith(all);
+    });
+  });
+
+  describe('updateUser', () => {
+    it('aktualisiert Nutzer (Admin)', async () => {
+      req.user.role = 'admin';
+      const user = { id: 2, username: 'alt', role: 'user', save: jest.fn(), email: 'alt@ex' };
+      User.findByPk.mockResolvedValue(user);
+      req.params.id = 2;
+      req.body = { username: 'neu', role: 'staff' };
+
+      await updateUser(req, res);
+
+      expect(User.findByPk).toHaveBeenCalledWith(2);
+      expect(user.username).toBe('neu');
+      expect(user.role).toBe('staff');
+      expect(user.save).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith({
+        message: 'Benutzer erfolgreich aktualisiert.',
+        user: { id: 2, username: 'neu', email: 'alt@ex', role: 'staff' },
+      });
     });
 
-    describe('getMe', () => {
-        it('should get the current user\'s profile', async () => {
-            const mockUser = { id: 1, username: 'testuser' };
-            User.findByPk.mockResolvedValue(mockUser);
+    it('verweigert Update durch anderen Nutzer', async () => {
+      req.params.id = 2;
+      const user = { id: 2, username: 'alt', role: 'user', save: jest.fn() };
+      User.findByPk.mockResolvedValue(user);
 
-            await getMe(mockReq, mockRes);
+      await updateUser(req, res);
 
-            expect(User.findByPk).toHaveBeenCalledWith(1, { attributes: { exclude: ['password'] } });
-            expect(mockRes.json).toHaveBeenCalledWith(mockUser);
-        });
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Keine Berechtigung, diesen Nutzer zu ändern.' });
+    });
+  });
 
-        it('should return 404 if user not found', async () => {
-            User.findByPk.mockResolvedValue(null);
+  describe('deleteUser', () => {
+    it('löscht Nutzer (Admin)', async () => {
+      req.user.role = 'admin';
+      const user = { id: 2, destroy: jest.fn() };
+      User.findByPk.mockResolvedValue(user);
+      req.params.id = 2;
 
-            await getMe(mockReq, mockRes);
+      await deleteUser(req, res);
 
-            expect(mockRes.status).toHaveBeenCalledWith(404);
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'User not found' });
-        });
+      expect(User.findByPk).toHaveBeenCalledWith(2);
+      expect(user.destroy).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith({ message: 'Benutzer erfolgreich gelöscht.' });
     });
 
-    describe('getAllUsers', () => {
-        it('should get all users', async () => {
-            const mockUsers = [{ id: 1 }, { id: 2 }];
-            User.findAll.mockResolvedValue(mockUsers);
+    it('verweigert Löschen durch anderen Nutzer', async () => {
+      const user = { id: 2, destroy: jest.fn() };
+      User.findByPk.mockResolvedValue(user);
+      req.params.id = 2;
 
-            await getAllUsers(mockReq, mockRes);
+      await deleteUser(req, res);
 
-            expect(User.findAll).toHaveBeenCalledWith({ attributes: { exclude: ['password'] } });
-            expect(mockRes.json).toHaveBeenCalledWith(mockUsers);
-        });
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Keine Berechtigung, diesen Nutzer zu löschen.' });
     });
-
-    describe('updateUser', () => {
-        it('should update a user successfully by admin', async () => {
-            mockReq.user.role = 'admin';
-            const mockUser = { id: 2, username: 'olduser', role: 'user', save: jest.fn(), email: 'old@test.com' };
-            User.findByPk.mockResolvedValue(mockUser);
-            mockReq.params.id = 2;
-            mockReq.body = { username: 'newuser', role: 'staff' };
-
-            await updateUser(mockReq, mockRes);
-
-            expect(User.findByPk).toHaveBeenCalledWith(2);
-            expect(mockUser.username).toBe('newuser');
-            expect(mockUser.role).toBe('staff');
-            expect(mockUser.save).toHaveBeenCalled();
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'User updated successfully', user: { id: 2, username: 'newuser', email: 'old@test.com', role: 'staff' } });
-        });
-
-        it('should not allow a user to update another user', async () => {
-            mockReq.params.id = 2;
-            const mockUser = { id: 2, username: 'olduser', role: 'user', save: jest.fn() };
-            User.findByPk.mockResolvedValue(mockUser);
-
-
-            await updateUser(mockReq, mockRes);
-
-            expect(mockRes.status).toHaveBeenCalledWith(403);
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'Not authorized to update this user' });
-        });
-    });
-
-    describe('deleteUser', () => {
-        it('should delete a user successfully by admin', async () => {
-            mockReq.user.role = 'admin';
-            const mockUser = { id: 2, destroy: jest.fn() };
-            User.findByPk.mockResolvedValue(mockUser);
-            mockReq.params.id = 2;
-
-            await deleteUser(mockReq, mockRes);
-
-            expect(User.findByPk).toHaveBeenCalledWith(2);
-            expect(mockUser.destroy).toHaveBeenCalled();
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'User deleted successfully' });
-        });
-
-        it('should not allow a user to delete another user', async () => {
-            const mockUser = { id: 2, destroy: jest.fn() };
-            User.findByPk.mockResolvedValue(mockUser);
-            mockReq.params.id = 2;
-
-            await deleteUser(mockReq, mockRes);
-
-            expect(mockRes.status).toHaveBeenCalledWith(403);
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'Not authorized to delete this user' });
-        });
-    });
+  });
 });

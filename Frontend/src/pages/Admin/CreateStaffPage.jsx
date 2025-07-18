@@ -1,3 +1,9 @@
+/**
+ * CreateStaffPage – Admin‑Formular, um einen neuen Mitarbeiter anzulegen.
+ *
+ * Holt das JWT aus localStorage, sendet POST an /api/admin/staff/register und
+ * navigiert nach Erfolg zur User‑Übersicht.
+ */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../../services/api'; // Importiere die API-Basis-URL

@@ -1,29 +1,42 @@
+/**
+ * Tarif‑Modell für MoveSmart
+ *
+ * Speichert unterschiedliche Preispläne (z. B. Standard‑, Studenten‑ oder
+ * Wochenend‑Tarif). Jeder Tarif hat einen eindeutigen Namen und einen Preis
+ * pro Stunde. Die Tabelle trägt den Namen `rates` und nutzt `createdAt`/
+ * `updatedAt` für eine einfache Historie.
+ */
 import { DataTypes } from 'sequelize';
-import {sequelize} from '../config/database.js'; // Pfad zu deiner Sequelize-Instanz
+import { sequelize } from '../config/database.js';
 
-const Rates = sequelize.define('Rates', {
-    id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-        allowNull: false,
-    },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true, // Optional: Namen sollten einzigartig sein
-    },
-    pricePerHour: {
-        type: DataTypes.DECIMAL(10, 2), // z.B. 10 Ziffern insgesamt, 2 Nachkommastellen
-        allowNull: false,
-    },
-    description: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
+const Rate = sequelize.define('Rate', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  /**
+   * Klarer, eindeutiger Tarifname (z. B. "Student", "Weekend Special").
+   */
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
+  /**
+   * Preis pro Stunde in €, Genauigkeit 2 Nachkommastellen.
+   */
+  pricePerHour: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+  },
+  /**
+   * Freitext‑Beschreibung (optional).
+   */
+  description: DataTypes.TEXT,
 }, {
-    timestamps: true, // Fügt createdAt und updatedAt hinzu
-    tableName: 'rates', // Optional: Der tatsächliche Tabellenname in der Datenbank
+  tableName: 'rates',
+  timestamps: true,
 });
 
-export default Rates;
+export default Rate;

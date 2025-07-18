@@ -1,3 +1,12 @@
+/**
+ * CarManagementPage – Admin-Oberfläche zur Fahrzeugverwaltung
+ *
+ * Funktionen:
+ * • Liste aller Fahrzeuge laden / anzeigen
+ * • Fahrzeuge anlegen, bearbeiten, löschen
+ * • Inline‑Bearbeitung mit Formularen; Erstellungsformular oben
+ * • Authentifizierung via JWT (x-auth-token)
+ */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 

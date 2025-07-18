@@ -1,37 +1,48 @@
+/**
+ * React‑Hook: useAuth
+ *
+ * Kümmert sich um
+ * • Token‑Speicherung in localStorage
+ * • Dekodieren des JWT, um die Rolle auszulesen
+ * • login / logout Helferfunktionen
+ */
 import { useState, useEffect } from 'react';
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from 'jwt-decode';
 
 const useAuth = () => {
-    const [token, setToken] = useState(localStorage.getItem('authToken'));
-    const [userRole, setUserRole] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const [token, setToken]     = useState(localStorage.getItem('authToken'));
+  const [userRole, setRole]   = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (token) {
-            try {
-                const decoded = jwtDecode(token);
-                setUserRole(decoded.user.role); // Achte darauf, dass dein Token die Rolle genau hier drin hat!
-            } catch (error) {
-                setUserRole(null);
-            }
-        } else {
-            setUserRole(null);
-        }
-        setLoading(false);
-    }, [token]);
+  // Token auswerten, sobald es sich ändert
+  useEffect(() => {
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setRole(decoded?.user?.role ?? null);
+      } catch {
+        setRole(null);
+      }
+    } else {
+      setRole(null);
+    }
+    setLoading(false);
+  }, [token]);
 
-    const login = (newToken) => {
-        setToken(newToken);
-        localStorage.setItem('authToken', newToken);
-    };
+  /** Speichert neues Token und Rolle */
+  const login = newToken => {
+    setToken(newToken);
+    localStorage.setItem('authToken', newToken);
+  };
 
-    const logout = () => {
-        setToken(null);
-        setUserRole(null);
-        localStorage.removeItem('authToken');
-    };
+  /** Löscht Token und Rolle */
+  const logout = () => {
+    setToken(null);
+    setRole(null);
+    localStorage.removeItem('authToken');
+  };
 
-    return { token, userRole, loading, login, logout };
+  return { token, userRole, loading, login, logout };
 };
 
 export default useAuth;

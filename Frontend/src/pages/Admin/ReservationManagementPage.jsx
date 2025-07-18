@@ -1,3 +1,11 @@
+/**
+ * ReservationManagementPage – Admin-Oberfläche zur Verwaltung von Reservierungen
+ *
+ * Funktionen
+ * • Alle Reservierungen laden, Status ändern, löschen
+ * • JWT-basierte Authentifizierung (x-auth-token)
+ * • Inline-Statusbearbeitung via Dropdown
+ */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "./ReservationManagementPage.css";
