@@ -52,7 +52,7 @@ function App() {
   <div className="navbar-links flex gap-6 items-center">
     {token ? (
       <>
-        <NavLink to="/home">Dashboard</NavLink>
+        <NavLink to="/home">Fahrzeuge</NavLink>
         <NavLink to="/profile">Profil</NavLink>
         <NavLink to="/reservations">Reservierungen</NavLink>
         <NavLink to="/aboutus">Über&nbsp;Uns</NavLink>
