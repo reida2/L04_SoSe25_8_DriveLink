@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./Backend
+    # Pass environment safely
+    env_file: ./Backend/.env
+    # Persist uploaded files + sqlite file outside the container
+    volumes:
+      - ./Backend/uploads:/app/uploads
+      - ./Backend/database:/app/database
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build: ./Frontend
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
+
+    environment:
+      - FRONTEND_PORT=${FRONTEND_PORT:-8080}
+      - VITE_API_URL=http://localhost:3001
