@@ -7,7 +7,7 @@
 #
 
 PORT="${FRONTEND_PORT:-80}"
-echo "⚡  Frontend is running on  http://localhost:${PORT}"
+echo " Frontend is running on  http://localhost:${PORT}"
 
 # Hand off to Nginx (same as the original CMD)
 exec nginx -g 'daemon off;'
