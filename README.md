@@ -189,5 +189,3 @@ npm run test:watch
 - **Amir Mangkok**
 
 ## Lizenz
-
-Keine Lizenzdatei enthalten. Füge eine `LICENSE`-Datei hinzu, wenn du das Projekt öffentlich verteilen möchtest.
